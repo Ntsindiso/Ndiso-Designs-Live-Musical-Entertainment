@@ -1,0 +1,23 @@
+name: 24/7 Ndiso Designs Photo Stream
+on:
+  schedule:
+    - cron: '0 */6 * * *' 
+  workflow_dispatch:
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Start Streaming Static Photo
+        run: |
+          ffmpeg -re -loop 1 -i "product-image.jpg" \
+          -f lavfi -i anullsrc \
+          -c:v libx264 -preset veryfast -tune stillimage -pix_fmt yuv420p -g 60 \
+          -c:a aac -ar 44100 -b:a 128k \
+          -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
